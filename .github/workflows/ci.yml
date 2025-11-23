@@ -1,0 +1,150 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test on Python ${{ matrix.python-version }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Display Python version
+      run: python -c "import sys; print(sys.version)"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+
+    - name: Lint with flake8 (optional, continues on error)
+      continue-on-error: true
+      run: |
+        pip install flake8
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Run tests with pytest
+      run: |
+        pytest test_poinsot_ellipsoid.py -v --tb=short
+
+    - name: Run tests with coverage
+      run: |
+        pytest test_poinsot_ellipsoid.py --cov=poinsot_ellipsoid --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  integration-test:
+    name: Integration Test - Script Execution
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Test script with no arguments
+      run: |
+        python poinsot_ellipsoid.py
+        test -f poinsot_ellipsoids.png
+
+    - name: Test script with single component
+      run: |
+        python poinsot_ellipsoid.py --omega1 0.5
+        test -f poinsot_ellipsoids.png
+
+    - name: Test script with all components
+      run: |
+        python poinsot_ellipsoid.py --omega1 0.2 --omega2 0.8 --omega3 0.1
+        test -f poinsot_ellipsoids.png
+
+    - name: Verify output file is non-empty
+      run: |
+        if [ ! -s poinsot_ellipsoids.png ]; then
+          echo "Error: Output file is empty"
+          exit 1
+        fi
+
+    - name: Upload generated plot as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: poinsot-ellipsoids-output
+        path: poinsot_ellipsoids.png
+        retention-days: 7
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install quality tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install black isort mypy pylint
+
+    - name: Check code formatting with black
+      continue-on-error: true
+      run: black --check --diff poinsot_ellipsoid.py test_poinsot_ellipsoid.py
+
+    - name: Check import sorting with isort
+      continue-on-error: true
+      run: isort --check-only --diff poinsot_ellipsoid.py test_poinsot_ellipsoid.py
+
+    - name: Run pylint
+      continue-on-error: true
+      run: |
+        pip install -r requirements.txt
+        pylint poinsot_ellipsoid.py --disable=C0103,C0114,C0115,C0116 || true
+
+    - name: Type checking with mypy
+      continue-on-error: true
+      run: |
+        pip install -r requirements.txt
+        mypy poinsot_ellipsoid.py --ignore-missing-imports || true

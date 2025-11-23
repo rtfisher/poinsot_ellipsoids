@@ -98,3 +98,66 @@ Angular velocity: ω=(0.2, 0.8, 0.1)
 Angular momentum squared: L²=6.770
 Rotational kinetic energy: T=1.030
 ```
+
+## Development
+
+### Running Tests
+
+The project includes a comprehensive test suite with unit tests and integration tests.
+
+#### Install Development Dependencies
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+#### Run All Tests
+
+```bash
+pytest test_poinsot_ellipsoid.py -v
+```
+
+#### Run Tests with Coverage
+
+```bash
+pytest test_poinsot_ellipsoid.py --cov=poinsot_ellipsoid --cov-report=term-missing
+```
+
+#### Run Specific Test Classes
+
+```bash
+# Test argument parsing
+pytest test_poinsot_ellipsoid.py::TestArgumentParsing -v
+
+# Test physics calculations
+pytest test_poinsot_ellipsoid.py::TestConservedQuantities -v
+
+# Test visualization
+pytest test_poinsot_ellipsoid.py::TestVisualization -v
+```
+
+### Continuous Integration
+
+The project uses GitHub Actions for automated testing on every commit. The CI pipeline:
+
+- Tests on Python 3.8, 3.9, 3.10, 3.11, and 3.12
+- Tests on Ubuntu, macOS, and Windows
+- Runs comprehensive unit tests with pytest
+- Generates code coverage reports
+- Performs integration tests by running the script with various inputs
+- Includes optional code quality checks (black, isort, pylint, mypy)
+
+CI status: ![CI Tests](https://github.com/rtfisher/poinsot_ellipsoids/actions/workflows/ci.yml/badge.svg)
+
+### Test Coverage
+
+The test suite covers:
+
+- **Argument parsing**: Default values, single components, all components, edge cases
+- **Physics calculations**: Conserved quantities for various angular velocities and inertia values
+- **Ellipsoid parameters**: Semi-axes calculations, ordering, edge cases
+- **Surface generation**: Mesh generation, geometric properties, ellipsoid equation satisfaction
+- **Intersection finding**: Polhode curve approximation with various tolerances
+- **Visualization**: File creation, correct outputs, various input configurations
+- **Edge cases**: Zero values, very small/large values, equal/symmetric inertias
+- **Physics consistency**: Energy positivity, angular momentum properties, ellipsoid intersections
