@@ -1,5 +1,7 @@
 # Poinsot Ellipsoid Visualization
 
+[![CI Tests](https://github.com/rtfisher/poinsot_ellipsoids/actions/workflows/ci.yml/badge.svg)](https://github.com/rtfisher/poinsot_ellipsoids/actions/workflows/ci.yml)
+
 A Python visualization tool for Poinsot ellipsoids, which describe the geometry of rigid body rotation in classical mechanics.
 
 ## Overview
@@ -146,8 +148,6 @@ The project uses GitHub Actions for automated testing on every commit. The CI pi
 - Generates code coverage reports
 - Performs integration tests by running the script with various inputs
 - Includes optional code quality checks (black, isort, pylint, mypy)
-
-CI status: ![CI Tests](https://github.com/rtfisher/poinsot_ellipsoids/actions/workflows/ci.yml/badge.svg)
 
 ### Test Coverage
 
