@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend for compatibility
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import argparse
@@ -165,12 +167,10 @@ def create_visualization(omega1, omega2, omega3, I1, I2, I3,
     X_energy, Y_energy, Z_energy = generate_ellipsoid_surface(b1, b2, b3)
 
     # Plot the inertia ellipsoid (blue)
-    ax.plot_surface(X_inertia, Y_inertia, Z_inertia, alpha=0.3, color='blue',
-                    label='Inertia Ellipsoid')
+    ax.plot_surface(X_inertia, Y_inertia, Z_inertia, alpha=0.3, color='blue')
 
     # Plot the energy ellipsoid (red)
-    ax.plot_surface(X_energy, Y_energy, Z_energy, alpha=0.3, color='red',
-                    label='Energy Ellipsoid')
+    ax.plot_surface(X_energy, Y_energy, Z_energy, alpha=0.3, color='red')
 
     # Calculate and plot intersection curve
     intersection_points = find_intersection_points(omega1, omega2, omega3,
@@ -178,11 +178,10 @@ def create_visualization(omega1, omega2, omega3, I1, I2, I3,
 
     if len(intersection_points) > 0:
         ax.plot(intersection_points[:, 0], intersection_points[:, 1],
-                intersection_points[:, 2], 'g--', linewidth=2, label='Intersection')
+                intersection_points[:, 2], 'g--', linewidth=2)
 
     # Mark the given angular velocity point
-    ax.scatter([omega1], [omega2], [omega3], color='black', s=100, marker='o',
-               label=f'ω = ({omega1}, {omega2}, {omega3})')
+    ax.scatter([omega1], [omega2], [omega3], color='black', s=100, marker='o')
 
     # Draw and label axes
     axis_length = max(a1, a2, a3) * 1.2
@@ -206,7 +205,6 @@ def create_visualization(omega1, omega2, omega3, I1, I2, I3,
     ax.set_ylim([0, max_range])
     ax.set_zlim([0, max_range])
 
-    ax.legend(loc='upper left')
     ax.view_init(elev=20, azim=45)
 
     plt.tight_layout()
